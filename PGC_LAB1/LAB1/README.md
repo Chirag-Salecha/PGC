@@ -1,6 +1,6 @@
 # Performance Analysis of Matrix Multiplication Across Parallel Computing Models
 
-**Repository:** [PGC_LAB01](http://github.com/Chirag-Salecha/PGC)
+**Repository:** [PGC](http://github.com/Chirag-Salecha/PGC)
 
 ## Overview
 
