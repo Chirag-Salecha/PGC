@@ -15,10 +15,21 @@ The objective is to quantify the performance gains achieved when the same comput
 
 ```mermaid
 flowchart LR
-    A["Two 4000x4000 matrices\n(A = 1.0, B = 1.0)"] --> B["Same multiplication executed\nunder 4 parallel models"]
-    B --> C["Correctness check\nC[0][0] = 4000.00"]
-    B --> D["Execution time recorded\nand compared"]
+    A["Two 4000 × 4000 Matrices<br/>A = 1.0, B = 1.0"] --> B["Matrix Multiplication<br/>C = A × B"]
+
+    B --> C["Sequential<br/>1 CPU Core"]
+    B --> D["OpenMP<br/>8 CPU Threads"]
+    B --> E["MPI<br/>4 Machines"]
+    B --> F["CUDA<br/>GPU"]
+
+    C --> G["Correctness Check<br/>C[0][0] = 4000.00"]
+    D --> G
+    E --> G
+    F --> G
+
+    G --> H["Execution Time<br/>and Speedup Comparison"]
 ```
+
 
 ## Objectives
 
@@ -40,12 +51,15 @@ flowchart LR
 ## Computing Models
 
 ### 1. Sequential
+
 A single-threaded, triple-nested loop (`O(N³)` complexity) running on one CPU core with no hardware concurrency. Used as the performance baseline.
 
 ### 2. OpenMP (Shared Memory)
+
 The `#pragma omp parallel for` directive forks **8 worker threads** that share a single unified memory address space, dividing loop iterations dynamically across CPU cores. No explicit data copying is required between threads.
 
 ### 3. MPI (Distributed Memory)
+
 Executed across **4 Ubuntu virtual machines** (one Master, three Workers) connected over a network, configured with matching hostnames, SSH access, and Open MPI:
 
 1. **Scatter** — Matrix A is partitioned into 4 sub-blocks (1000 rows each) and distributed via `MPI_Scatter`.
@@ -56,6 +70,7 @@ Executed across **4 Ubuntu virtual machines** (one Master, three Workers) connec
 Since the ranks do not share memory, all data exchange is explicit — the defining property of the distributed-memory model.
 
 ### 4. CUDA (Massively Parallel SIMT)
+
 Matrices A and B are transferred from host to device memory over PCIe. The kernel is launched across a 2D execution grid:
 
 | Configuration | Value |
@@ -106,18 +121,16 @@ CUDA additionally achieved a **~186.9× speedup** over the OpenMP implementation
 
 ## Repository Structure
 
-```
-├── src/
-│   ├── sequential/matrix_sequential.c   # Model 1: single-core baseline
-│   ├── openmp/matrix_openmp.c           # Model 2: 8-thread shared memory
-│   ├── mpi/matrix_mpi.c                 # Model 3: 4-machine distributed program
-│   ├── mpi/mpi_send_recv.c              # Model 3: point-to-point communication test
-│   └── mpi/hosts                        # Model 3: MPI hostfile
-│   └── cuda/matrix_cuda.cu              # Model 4: GPU kernel program
-├── images/                              # Screenshots and charts referenced in this document
-├── scripts/generate_charts.py           # Script used to generate the charts above
-└── README.md                            # This document
-```
+    ├── src/
+    │   ├── sequential/matrix_sequential.c   # Model 1: single-core baseline
+    │   ├── openmp/matrix_openmp.c           # Model 2: 8-thread shared memory
+    │   ├── mpi/matrix_mpi.c                 # Model 3: 4-machine distributed program
+    │   ├── mpi/mpi_send_recv.c              # Model 3: point-to-point communication test
+    │   └── mpi/hosts                        # Model 3: MPI hostfile
+    │   └── cuda/matrix_cuda.cu              # Model 4: GPU kernel program
+    ├── images/                              # Screenshots and charts referenced in this document
+    ├── scripts/generate_charts.py           # Script used to generate the charts above
+    └── README.md                            # This document
 
 ## Source Code Reference
 
@@ -136,44 +149,41 @@ CUDA additionally achieved a **~186.9× speedup** over the OpenMP implementation
 ## Build and Run Instructions
 
 ### 1. Sequential
-```bash
-gcc matrix_sequential.c -o matrix_sequential
-./matrix_sequential
-```
+
+    gcc matrix_sequential.c -o matrix_sequential
+    ./matrix_sequential
 
 ### 2. OpenMP
-```bash
-gcc -fopenmp matrix_openmp.c -o matrix_openmp
-./matrix_openmp
-```
+
+    gcc -fopenmp matrix_openmp.c -o matrix_openmp
+    ./matrix_openmp
 
 ### 3. MPI
+
 Requires 4 networked machines with SSH access and Open MPI pre-installed.
-```bash
-# Compile on the Master machine
-mpicc matrix_mpi.c -o matrix_mpi
 
-# Copy the compiled program to each Worker
-scp matrix_mpi worker1:~/
-scp matrix_mpi worker2:~/
-scp matrix_mpi worker3:~/
+    # Compile on the Master machine
+    mpicc matrix_mpi.c -o matrix_mpi
 
-# Run across all 4 machines
-mpirun -np 4 --hostfile hosts ./matrix_mpi
-```
+    # Copy the compiled program to each Worker
+    scp matrix_mpi worker1:~/
+    scp matrix_mpi worker2:~/
+    scp matrix_mpi worker3:~/
+
+    # Run across all 4 machines
+    mpirun -np 4 --hostfile hosts ./matrix_mpi
 
 ### 4. CUDA
+
 Requires an NVIDIA GPU and the CUDA Toolkit.
-```bash
-nvcc matrix_cuda.cu -o matrix_cuda
-./matrix_cuda
-```
+
+    nvcc matrix_cuda.cu -o matrix_cuda
+    ./matrix_cuda
 
 ### Regenerating the Charts
-```bash
-pip install matplotlib numpy
-python3 scripts/generate_charts.py
-```
+
+    pip install matplotlib numpy
+    python3 scripts/generate_charts.py
 
 ## Conclusion
 
