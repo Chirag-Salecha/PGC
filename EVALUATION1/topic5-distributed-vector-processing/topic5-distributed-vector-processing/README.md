@@ -1,6 +1,12 @@
 # Topic 5: Distributed Vector Processing Using MPI
 ### Parallel Computing Mini-Project & Lab Evaluation Repository
+## Team Members
 
+| Sl. No. | Name |
+|---:|---|
+| 1 | Chirag |
+| 2 | Achyuth |
+| 3 | Adarsh |
 ---
 
 ## 1. Project Title
