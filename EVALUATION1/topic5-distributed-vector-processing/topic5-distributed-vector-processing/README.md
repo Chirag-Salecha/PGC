@@ -234,12 +234,23 @@ Quantifies the percentage of processing capability effectively utilized (Ideal =
 | 10,000,000 | 4 | 0.2228 s | 0.0682 s | 3.27x | 0.82 (82%) |
 | 10,000,000 | 8 | 0.2228 s | 0.0435 s | 5.12x | 0.64 (64%) |
 
-### Generated Graphs:
-* **Execution Time vs. Processes:** Saved at `graphs/execution_time.png`
-* **Speedup vs. Processes:** Saved at `graphs/speedup.png`
-* **Parallel Efficiency vs. Processes:** Saved at `graphs/efficiency.png`
-* **Summary Dashboard:** Saved at `graphs/performance_summary.png`
+## Generated Graphs
 
+### Execution Time vs. Processes
+
+![Execution Time vs Processes](graphs/execution_time.png)
+
+### Speedup vs. Processes
+
+![Speedup vs Processes](graphs/speedup.png)
+
+### Parallel Efficiency vs. Processes
+
+![Parallel Efficiency vs Processes](graphs/efficiency.png)
+
+### Performance Summary
+
+![Performance Summary](graphs/performance_summary.png)
 ---
 
 ## 15. Limitations
