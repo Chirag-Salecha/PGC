@@ -625,62 +625,7 @@ The optimized transpose required **0.422 ms**, whereas the direct transpose requ
 
 **GPU performance depends not only on the number of operations, but also on how threads access memory.** A naive transpose incurs inefficient, strided global-memory writes. A shared-memory tiled transpose reorganizes the same elements to preserve coalesced global-memory reads and writes; 32 x 33 padding helps avoid shared-memory bank conflicts. On the recorded NVIDIA RTX 5060 Ti, these changes made the transpose faster without changing its mathematical result. Naive matrix multiplication provides a separate computation baseline and motivates shared-memory reuse as a future optimization.
 
-## 18. Viva questions with answers
 
-**1. What is a warp?**  
-A warp is a group of 32 CUDA threads that the GPU schedules in the SIMT execution model.
-
-**2. What is coalesced global-memory access?**  
-It occurs when the addresses requested by threads of a warp can be served efficiently using relatively few memory transactions, often because they are contiguous.
-
-**3. Which access is uncoalesced in the naive transpose?**  
-The **write**. Neighboring threads read adjacent input elements but write output elements `N` floats apart.
-
-**4. Why is shared memory used in the optimized transpose?**  
-To reorder data within a block so the global output writes become coalesced while input reads remain coalesced.
-
-**5. Why is `__syncthreads()` needed?**  
-It guarantees that tile-loading threads finish their writes before other threads read the transposed tile.
-
-**6. What is a bank conflict?**  
-A bank conflict occurs when multiple lanes access different shared-memory addresses in the same bank, requiring serialization or additional handling.
-
-**7. Why use a 32 x 33 tile instead of 32 x 32?**  
-An extra column changes column-access stride from 32 to 33 float words, distributing lane accesses across different banks.
-
-**8. Why use CUDA events rather than only a CPU stopwatch?**  
-Kernel launches are asynchronous. Events recorded in the CUDA stream measure elapsed GPU execution more accurately for these short kernels.
-
-**9. What is effective bandwidth?**  
-Useful bytes read and written divided by kernel execution time, reported here in decimal GB/s.
-
-**10. Why can coalesced transpose be slower on some tests?**  
-Its added synchronization, shared-memory operations, and resource usage can outweigh transaction savings on small workloads or unfavorable hardware conditions.
-
-**11. What is the difference between kernel time and end-to-end time?**  
-Kernel time measures GPU execution; end-to-end time additionally includes transfers, allocation, CPU work, and synchronization as applicable.
-
-**12. How much work does one naive-matmul thread perform for N=1024?**  
-It computes one output element with 1,024 loop iterations, reading one A value and one B value per iteration in source code and accumulating the products.
-
-**13. How is naive matmul improved?**  
-Use tiling and shared memory so a loaded A or B element can be reused for many multiply-accumulate operations.
-
-**14. Why are kernel results checked against CPU reference values?**  
-Performance numbers are meaningful only if the GPU computes the intended mathematical result.
-
-**15. What is the main outcome of Experiment 6?**  
-A coalesced, shared-memory-tiled transpose achieved a measured **1.88x improvement** over the direct transpose on the specified GPU, with both results verified.
-
-## 19. References
-
-1. **Course laboratory manual**, *Experiment 6: Memory Optimization in CUDA*, Memory Systems and Synchronization, 7 pages (provided for this coursework).
-2. [NVIDIA CUDA Programming Guide — Writing SIMT Kernels and Memory Performance](https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/writing-cuda-kernels.html).
-3. [NVIDIA CUDA C++ Best Practices Guide — Memory Optimizations](https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/).
-4. [GitHub Docs — Creating Diagrams (Mermaid)](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams).
-5. [GitHub Docs — Adding a File to a Repository](https://docs.github.com/en/repositories/working-with-files/managing-files/adding-a-file-to-a-repository).
-
----
 
 ### Repository layout
 
