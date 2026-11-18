@@ -509,24 +509,71 @@ The program calculates bandwidth/GFLOPS with its original higher-precision event
 | Naive matrix multiplication | 1024 x 1024 | **1.364 ms** | **1573.8 GFLOPS** | PASS |
 
 **Transpose speedup:** `1.88x`. **GPU:** RTX 5060 Ti, compute capability `12.0`.
+### 12.2 Execution Time Comparison
 
-### 12.2 Execution time comparison
+![Measured Transpose Execution Times](RESULTS/transpose_times.png)
 
-![Measured transpose execution times](RESULTS/transpose_times.png)
+**Performance Analysis:**
 
-Lower time is better. Both bars refer to the **same transpose operation and matrix size**, allowing a meaningful direct comparison.
+- Uncoalesced Transpose Execution Time: **0.795 ms**
+- Coalesced Transpose Execution Time: **0.422 ms**
+- Achieved Speedup: **1.88x**
 
-### 12.3 Effective bandwidth comparison
+The coalesced transpose achieves better performance because adjacent GPU threads access contiguous global-memory locations.
 
-![Measured effective transpose bandwidth](RESULTS/transpose_bandwidth.png)
+The uncoalesced implementation performs strided memory writes, resulting in more memory transactions and reduced effective bandwidth.
 
-Higher effective bandwidth is better. Coalescing improves the fraction of useful bytes delivered per memory transaction.
+The coalesced implementation uses shared-memory tiling to optimize global-memory access.
 
-### 12.4 Naive matmul throughput
+**Observation:** The coalesced implementation reduces execution time by approximately 46.9% compared with the uncoalesced implementation.
 
-![Measured naive matrix multiplication throughput](RESULTS/matmul_throughput.png)
+---
 
-GFLOPS measures floating-point operations per second, **not** memory bandwidth. Do not compare the numeric units of GFLOPS and GB/s as if they were interchangeable.
+### 12.3 Effective Bandwidth Comparison
+
+![Measured Effective Transpose Bandwidth](RESULTS/transpose_bandwidth.png)
+
+**Performance Analysis:**
+
+- Uncoalesced Memory Bandwidth: **168.9 GB/s**
+- Coalesced Memory Bandwidth: **317.8 GB/s**
+- Bandwidth Improvement: **1.88x**
+
+Memory coalescing allows neighboring GPU threads to access consecutive memory addresses, reducing the number of global-memory transactions.
+
+The optimized transpose uses a 32 x 32 shared-memory tile with an additional padding column to reduce shared-memory bank conflicts.
+
+**Observation:** The coalesced implementation achieves approximately 88.2% higher effective bandwidth than the uncoalesced implementation.
+
+---
+
+### 12.4 Naive Matrix Multiplication Throughput
+
+![Measured Naive Matrix Multiplication Throughput](RESULTS/matmul_throughput.png)
+
+**Performance Analysis:**
+
+- Matrix Size: **1024 x 1024**
+- Execution Time: **1.364 ms**
+- Computational Throughput: **1573.8 GFLOPS**
+- GPU: **NVIDIA GeForce RTX 5060 Ti**
+
+The naive CUDA matrix multiplication kernel assigns one GPU thread to compute each output matrix element.
+
+Each thread performs repeated global-memory accesses without using shared-memory tiling.
+
+Although GPU parallelism provides substantial computational throughput, repeated global-memory accesses limit the efficiency of this implementation.
+
+Further optimization can be achieved through:
+
+1. Shared-memory tiling.
+2. Global-memory access optimization.
+3. Register-level data reuse.
+4. Reduced redundant memory transfers.
+
+**Observation:** The naive matrix multiplication achieves 1573.8 GFLOPS, providing a baseline for evaluating future optimized implementations.
+
+**Note:** GFLOPS measures floating-point computational throughput, whereas GB/s measures memory bandwidth. These are different performance metrics and should not be compared directly.
 
 ### 12.5 Observation-data source
 
