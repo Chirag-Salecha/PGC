@@ -512,19 +512,19 @@ The program calculates bandwidth/GFLOPS with its original higher-precision event
 
 ### 12.2 Execution time comparison
 
-![Measured transpose execution times](assets/transpose_times.png)
+![Measured transpose execution times](RESULTS/transpose_times.png)
 
 Lower time is better. Both bars refer to the **same transpose operation and matrix size**, allowing a meaningful direct comparison.
 
 ### 12.3 Effective bandwidth comparison
 
-![Measured effective transpose bandwidth](assets/transpose_bandwidth.png)
+![Measured effective transpose bandwidth](RESULTS/transpose_bandwidth.png)
 
 Higher effective bandwidth is better. Coalescing improves the fraction of useful bytes delivered per memory transaction.
 
 ### 12.4 Naive matmul throughput
 
-![Measured naive matrix multiplication throughput](assets/matmul_throughput.png)
+![Measured naive matrix multiplication throughput](RESULTS/matmul_throughput.png)
 
 GFLOPS measures floating-point operations per second, **not** memory bandwidth. Do not compare the numeric units of GFLOPS and GB/s as if they were interchangeable.
 
@@ -618,11 +618,10 @@ The optimized transpose required **0.422 ms**, whereas the direct transpose requ
 cuda-memory-optimization/
 |-- README.md                       # This technical explanation
 |-- exp6.cu                         # Add your actual compiled CUDA source
-|-- assets/
+|-- RESULTS/
 |   |-- transpose_times.png
 |   |-- transpose_bandwidth.png
 |   `-- matmul_throughput.png
-|-- results/
 |   `-- run_01.csv                  # One observed benchmark run
 |-- scripts/
 |   `-- plot_results.py            # Regenerates plots from CSV
