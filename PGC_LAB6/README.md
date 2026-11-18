@@ -26,10 +26,7 @@ A reproducible CUDA C/C++ laboratory study of how **global-memory access pattern
 13. [Performance analysis](#13-performance-analysis)
 14. [Verification and limitations](#14-verification-and-limitations)
 15. [Troubleshooting](#15-troubleshooting)
-16. [Suggested experiments and extensions](#16-suggested-experiments-and-extensions)
-17. [Results and conclusion](#17-results-and-conclusion)
-18. [Viva questions with answers](#18-viva-questions-with-answers)
-19. [References](#19-references)
+16. [Results and conclusion](#17-results-and-conclusion)
 
 ---
 
@@ -601,19 +598,7 @@ With NVIDIA Nsight Compute (when available), inspect achieved memory throughput,
 | Out of GPU memory | Requested matrices too large | Reduce transpose/matmul sizes, e.g. `exp6.exe 2048 512`. |
 | Execution blocked by organizational policy | Windows application-control restriction | Request administrator approval or use an authorized GPU environment; do not disable organizational protections. |
 
-## 16. Suggested experiments and extensions
 
-To make a stronger engineering report, consider the following **optional** experiments after preserving the baseline:
-
-1. **Size sweep:** Compare transposes for `N=512, 1024, 2048, 4096`; make one plot of effective bandwidth versus matrix size for each kernel.
-2. **Padding ablation:** Compare `tile[32][32]` with `tile[32][33]`, with all other settings unchanged. Check both correctness and timing.
-3. **Block shape:** Experiment with a 32 x 8 transpose block that processes multiple elements per thread, and compare against the manual's 32 x 32 baseline.
-4. **Matmul tiling:** Implement shared-memory-tiled matrix multiplication and measure its improvement against `matMulNaive` on the same input size.
-5. **Correctness audit:** Check every output on smaller matrices and record maximum absolute/relative errors.
-6. **Repeated runs:** Execute at least three independent times, recording each run rather than copying an identical console block, then compute median and variation.
-7. **End-to-end comparison:** In addition to kernel-only measurements, time input transfers, kernel launches, synchronization, and output transfers to understand real application cost.
-
-These are **proposed experiments**, not claims that they were run.
 
 ## 17. Results and conclusion
 
