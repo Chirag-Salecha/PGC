@@ -1,4 +1,4 @@
-# Topic 5: Distributed Vector Processing Using MPI
+Distributed Vector Processing Using MPI
 ### Parallel Computing Mini-Project & Lab Evaluation Repository
 ## 1.Team Members
 
