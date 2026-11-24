@@ -1,7 +1,6 @@
 # Experiment 7 | Profiling and GPU Utilization
 
-**Parallel and GPU Computing Laboratory**  
-**KLE Technological University**  
+
 **Execution environment:** Windows workstation | NVIDIA GeForce RTX 5060 Ti (16 GB) | PyTorch + CUDA
 
 > **Objective:** Identify why a GPU workload is underutilized, locate the bottlenecks using profiling evidence, and improve execution by overlapping host-to-device transfers with GPU computation.
@@ -481,31 +480,7 @@ The visible Perfetto windows are **10-batch profiling captures**, not full 200-b
 
 *Figure 6. Device memory use sampled by `nvidia-smi`. Pinned host memory resides on the CPU; a higher device-memory reading does not by itself measure pinned host allocation.*
 
-### 12.3 Profiler-derived bottleneck visualizations
 
-![Kernel busy fraction graph using actual RTX 5060 Ti trace measurements](RESULTS/kernel_busy_fraction.png)
-
-*Figure 7. Kernel active fraction rose by 37.98 percentage points.*
-
-![Copy compute overlap graph using actual RTX 5060 Ti trace measurements](RESULTS/copy_compute_overlap.png)
-
-*Figure 8. Data-transfer/computation overlap changed from 0 to 38.247 ms. The X at zero indicates a true measured zero, not a missing bar.*
-
-![Kernel idle gaps time graph using actual RTX 5060 Ti trace measurements](RESULTS/gpu_idle_gap_time.png)
-
-*Figure 9. The combined duration of gaps longer than 50 µs fell by 98.28%.*
-
-### 12.4 Terminal output screenshots
-
-| Evidence | Captured screenshot |
-|---|---|
-| Baseline profiler analyzer report | [View baseline profiling output](RESULTS/Screenshot%202026-11-24%20103913.png) |
-| Optimized profiler analyzer report | [View optimized profiling output](RESULTS/Screenshot%202026-11-24%20103929.png) |
-| Full-run execution output (both modes) | [View both workload runs](RESULTS/Screenshot%202026-11-24%20103956.png) |
-| Speedup and checksum confirmation | [View performance comparison](RESULTS/Screenshot%202026-11-24%20104013.png) |
-| Generated time/throughput graph summary | [View graph summary](RESULTS/Screenshot%202026-11-24%20104031.png) |
-| `nvidia-smi` monitoring output | [View monitor output](RESULTS/Screenshot%202026-11-24%20104052.png) |
-| Average utilization and VRAM summary | [View monitoring summary](RESULTS/Screenshot%202026-11-24%20104106.png) |
 
 **Performance verification screenshot:**
 
@@ -620,48 +595,3 @@ The independent 10-batch traces confirmed **38.247 ms of copy/compute overlap**,
 
 **Conclusion:** Efficient GPU execution requires not only fast kernels, but also careful control of memory transfers, synchronization, and data-pipeline scheduling. This experiment demonstrates measurable acceleration while preserving the reported computation result.
 
-## 17. Viva questions and answers
-
-**Q1. Define GPU utilization. Why can `nvidia-smi` show 100% even if the GPU is not fully efficient?**  
-GPU utilization indicates activity during the sampling period. A GPU can have one or more kernels running yet still achieve low occupancy or suboptimal arithmetic throughput. Activity is therefore not the same as peak efficiency.
-
-**Q2. Why is pinned memory preferred to pageable memory for CPU-to-GPU transfers?**  
-Pinned memory stays page-locked and supports more direct DMA transfers. It can also enable asynchronous transfers with `non_blocking=True` when supported by the execution setup.
-
-**Q3. Why use two streams and two device buffers?**  
-The copy stream can prepare the next input while the compute stream processes the current input. Separate buffers prevent the next copy from overwriting data still being consumed. CUDA events coordinate these dependencies.
-
-**Q4. What are arithmetic intensity and the ridge point? Is GEMM always compute-bound?**  
-Arithmetic intensity is FLOPs per byte transferred. The ridge point is peak FLOP/s divided by peak memory bandwidth. Large GEMM operations often have high intensity, but tiny matrices may instead be launch-bound or memory-bound.
-
-**Q5. Why might measured speedup be smaller than the theoretical limit?**  
-Some memory transfer and computation may not overlap due to dependencies or hardware constraints; unavoidable kernel time, synchronization overhead, memory bandwidth limits, and Windows GPU scheduling also restrict speedup.
-
-**Q6. Why must the checksums match?**  
-Optimization must preserve correct results. A program that runs faster but computes a different answer is not a valid optimization.
-
-## 18. Troubleshooting
-
-| Problem | Likely cause and action |
-|---|---|
-| `torch.cuda.is_available()` is `False` | Check NVIDIA driver and install a CUDA-enabled PyTorch build supporting the GPU. |
-| Out-of-memory error | Rerun with a smaller input, e.g. `--rows 8192` or `--rows 4096`. |
-| Trace has no kernel events / CUPTI warning | Close competing profilers, update driver, rerun the profile. |
-| No observed overlap | Check pinned host memory, `non_blocking=True`, event dependencies, and Windows driver/scheduling behavior. |
-| Optimized time is not better | Repeat with background GPU load minimized; compare identical batch settings and check pipeline dependencies. |
-| `nvidia-smi` file has very few samples | Use a longer monitoring workload (e.g. `--batches 400` for both modes). |
-| Checksums differ substantially | Verify event ordering, stream synchronization, buffers, and copied source code. |
-| README images do not appear on GitHub | Confirm that the files exist in `RESULTS/` and that capitalization matches the relative Markdown paths. |
-
-## 19. References
-
-1. **KLE Technological University**, *Experiment 7: Profiling and GPU Utilization*, course laboratory manual (11 pages), Sections 1–9.
-2. [PyTorch CUDA semantics: streams and synchronization](https://pytorch.org/docs/stable/notes/cuda.html).
-3. [PyTorch Profiler documentation](https://pytorch.org/docs/stable/profiler.html).
-4. [NVIDIA System Management Interface (`nvidia-smi`)](https://developer.nvidia.com/system-management-interface).
-5. [Perfetto Trace Viewer](https://ui.perfetto.dev/).
-6. [PyTorch installation guidance](https://pytorch.org/get-started/locally/).
-
----
-
-*This README documents the local RTX 5060 Ti experiment. All numerical results are sourced from the CSV files and PyTorch profiler traces supplied with this repository; the diagrams are conceptual and should not be interpreted as separately measured timelines.*
